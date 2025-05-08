@@ -1,17 +1,25 @@
-import streamlit as st
-from googletrans import Translator
+import os
+import requests
+from dotenv import load_dotenv
 
-# Заглавие
-st.title('Приложение за превод на текст')
+load_dotenv()
 
-# Входен текст
-text = st.text_input("Въведете текст за превод:")
+API_KEY = os.getenv('OPENWEATHER_API_KEY')
+CITY_ID = '524901'  # Example: Moscow
+URL = f'http://api.openweathermap.org/data/2.5/forecast?id={CITY_ID}&appid={API_KEY}&units=metric'
 
-# Избор на език
-language = st.selectbox("Изберете език за превод", ["en", "fr", "de", "it", "es"])
+def get_weather_forecast():
+    response = requests.get(URL)
+    if response.status_code == 200:
+        data = response.json()
+        for item in data['list'][:5]:  # Display first 5 forecast entries
+            dt_txt = item['dt_txt']
+            temp = item['main']['temp']
+            description = item['weather'][0]['description']
+            print(f"{dt_txt}: {temp}°C, {description}")
+    else:
+        print("Failed to fetch data:", response.status_code)
 
-# Превод
-if text:
-    translator = Translator()
-    translation = translator.translate(text, dest=language)
-    st.write(f'Преведеният текст на {language}: {translation.text}')
+if __name__ == "__main__":
+    get_weather_forecast()
+
